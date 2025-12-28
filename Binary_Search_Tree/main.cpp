@@ -48,6 +48,8 @@ int main()
     string str;
     while (cin >> str)
     {
+        if (str == "exit")
+            break;
         kv::BSTreeNode<string, string>* ret = dict.Find(str);
         if (ret)
         {
@@ -70,7 +72,7 @@ int main()
         }
         else
         {
-            ret->_value++; // 水果出现的次数
+            ret->_value++;
         }
     }
     countTree.InOrder();

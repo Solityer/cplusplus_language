@@ -10,12 +10,12 @@ namespace pzh
         BSTreeNode<K>* _right;
         K _key;
 
+        // 构造函数，初始化节点
         BSTreeNode(const K& key)
             : _left(nullptr)
               , _right(nullptr)
               , _key(key)
-        {
-        }
+        {}
     };
 
     template <class K>
@@ -32,13 +32,13 @@ namespace pzh
                 return true;
             }
             Node* parent = nullptr;
-            Node* cur = _root;
-            while (cur)
+            Node* cur = _root;  // 当前节点从根开始
+            while (cur != nullptr)
             {
                 parent = cur;
-                if (cur->_key < key)
+                if (cur->_key < key)  // 插入的值大于当前值
                 {
-                    cur = cur->_right;
+                    cur = cur->_right;  // 向右子树移动
                 }
                 else if (cur->_key > key)
                 {
@@ -46,11 +46,11 @@ namespace pzh
                 }
                 else
                 {
-                    return false;
+                    return false;  // 关键值已存在，插入失败
                 }
             }
             cur = new Node(key);
-            if (parent->_key < key)
+            if (parent->_key < key)  // 将新节点连接到父节点
             {
                 parent->_right = cur;
             }
@@ -82,11 +82,12 @@ namespace pzh
             return false;
         }
 
-        bool Erase(const K& key) //删除函数
+        // 删除函数（非递归版本）
+        bool Erase(const K& key)
         {
             Node* parent = nullptr;
             Node* cur = _root;
-            while (cur)
+            while (cur)  // 寻找要删除的节点
             {
                 if (cur->_key < key)
                 {
@@ -98,10 +99,9 @@ namespace pzh
                     parent = cur;
                     cur = cur->_left;
                 }
-                else
+                else  // 找到了要删除的节点，分三种情况处理
                 {
-                    // 删除的节点左为空的情况
-                    if (cur->_left == nullptr)
+                    if (cur->_left == nullptr)  // 情况1：删除的节点左子节点为空
                     {
                         if (cur == _root)
                         {
@@ -109,6 +109,7 @@ namespace pzh
                         }
                         else
                         {
+                            // 将父节点的相应指针指向当前节点的右子节点
                             if (cur == parent->_left)
                             {
                                 parent->_left = cur->_right;
@@ -120,9 +121,8 @@ namespace pzh
                         }
                         delete cur;
                     }
-                    else if (cur->_right == nullptr)
+                    else if (cur->_right == nullptr)  // 情况2：删除的节点右子节点为空
                     {
-                        // 删除的节点右为空的情况
                         if (cur == _root)
                         {
                             _root = cur->_left;
@@ -140,24 +140,20 @@ namespace pzh
                         }
                         delete cur;
                     }
-                    else
+                    else  // 情况3：节点左右子节点都不为空
                     {
-                        // 删除的节点左右都不为空的情况
-                        // 右树的最小节点(最左节点)
                         Node* parent = cur;
-                        // 从当前节点的右子树开始，寻找中序遍历的后继节点
-                        // subLeft初始指向右子树的根节点
-                        Node* subLeft = cur->_right;
+                        Node* subLeft = cur->_right;  // 从当前节点的右子树开始，subLeft初始指向右子树的根节点
                         // 循环找到右子树中的最小节点（最左节点）
                         while (subLeft->_left)
                         {
                             parent = subLeft; // parent始终记录subLeft的父节点
                             subLeft = subLeft->_left;
                         }
-                        swap(cur->_key, subLeft->_key);
-                        // 如果后继节点是其父节点的左孩子，将父节点的左指针指向后继节点的右孩子
-                        // 如果后继节点是其父节点的右孩子，将父节点的右指针指向后继节点的右孩子
-                        // 注意：后继节点不可能有左孩子（因为它是子树中的最左节点）
+                        swap(cur->_key, subLeft->_key);  // 把后继节点的值给cur，相当于“间接删除cur”
+                        // 删除原本subLeft处的节点本身
+                        /* subLeft是cur右子树的最左节点，但当cur的右子树本身没有左分支时
+                         * 即cur->right自己就是右子树的最小节点，while循环不会执行，此时就会出现subLeft是父节点右孩子的情况。*/
                         if (subLeft == parent->_left)
                             parent->_left = subLeft->_right;
                         else
@@ -193,21 +189,22 @@ namespace pzh
         }
 
         ///////////////////////////////////////////////////////////////
-        // 强制生成默认的构造函数
-        BSTree() = default;
+        // 特殊成员函数
+        BSTree() = default;  // 强制生成默认构造函数
 
         ~BSTree() //析构
         {
             Destroy(_root);
         }
 
+        // 拷贝构造函数（深拷贝）
         BSTree(const BSTree<K>& t)
         {
-            _root = Copy(t._root);
+            _root = Copy(t._root);  // 复制整棵树
         }
 
         // t1 = t3
-        // 赋值  t就是t3的拷贝
+        // 赋值运算符重载（采用拷贝交换）
         BSTree<K>& operator=(BSTree<K> t)
         {
             swap(_root, t._root);
@@ -215,10 +212,12 @@ namespace pzh
         }
 
     private:
+        // 删除函数（递归实现）
         bool _EraseR(Node*& root, const K& key)
         {
             if (root == nullptr)
                 return false;
+            // 递归查找要删除的节点
             if (root->_key < key)
             {
                 return _EraseR(root->_right, key);
@@ -227,24 +226,23 @@ namespace pzh
             {
                 return _EraseR(root->_left, key);
             }
-            else
+            else   // 找到要删除的节点，分三种情况处理
             {
-                // 删除
-                if (root->_left == nullptr)
+                if (root->_left == nullptr)  // 情况1：节点左子节点为空
                 {
                     Node* del = root;
                     root = root->_right;
                     delete del;
                     return true;
                 }
-                else if (root->_right == nullptr)
+                else if (root->_right == nullptr)  // 情况2：节点右子节点为空
                 {
                     Node* del = root;
                     root = root->_left;
                     delete del;
                     return true;
                 }
-                else
+                else  // 情况3：节点左右子节点都不为空
                 {
                     Node* subLeft = root->_right;
                     while (subLeft->_left)
@@ -252,7 +250,7 @@ namespace pzh
                         subLeft = subLeft->_left;
                     }
                     swap(root->_key, subLeft->_key);
-                    // 转换成在子树去递归删除
+                    // 递归删除右子树中的后继节点
                     return _EraseR(root->_right, key);
                 }
             }
@@ -265,6 +263,7 @@ namespace pzh
                 root = new Node(key);
                 return true;
             }
+            // 递归寻找插入位置
             if (root->_key < key)
                 return _InsertR(root->_right, key);
             else if (root->_key > key)
@@ -303,7 +302,8 @@ namespace pzh
         }
 
         ///////////////////////////////////////////////////////////////
-        Node* Copy(Node* root) //拷贝
+        // 复制树（深拷贝）
+        Node* Copy(Node* root)
         {
             if (root == nullptr)
                 return nullptr;
@@ -313,7 +313,8 @@ namespace pzh
             return newRoot;
         }
 
-        void Destroy(Node*& root) //销毁
+        // 销毁树（后序遍历释放内存）
+        void Destroy(Node*& root)
         {
             if (root == nullptr)
                 return;
@@ -328,25 +329,26 @@ namespace pzh
     };
 }
 
-//namespace key_value 通过k查找v
+// 键值对版本的二叉搜索树命名空间
 namespace kv
 {
     template <class K, class V>
     struct BSTreeNode
     {
-        BSTreeNode<K, V>* _left;
-        BSTreeNode<K, V>* _right;
-        K _key;
-        V _value;
+        BSTreeNode<K, V>* _left;   // 左子节点指针
+        BSTreeNode<K, V>* _right;  // 右子节点指针
+        K _key;                    // 键
+        V _value;                  // 值
 
         BSTreeNode(const K& key, const V& value)
             : _left(nullptr)
-              , _right(nullptr)
-              , _key(key)
-              , _value(value)
+            , _right(nullptr)
+            , _key(key)
+            , _value(value)
         {}
     };
 
+    // 键值对二叉搜索树模板类
     template <class K, class V>
     class BSTree
     {
@@ -360,13 +362,11 @@ namespace kv
                 _root = new Node(key, value);
                 return true;
             }
-
             Node* parent = nullptr;
             Node* cur = _root;
-            while (cur)
+            while (cur != nullptr)
             {
                 parent = cur;
-
                 if (cur->_key < key)
                 {
                     cur = cur->_right;
@@ -380,6 +380,7 @@ namespace kv
                     return false;
                 }
             }
+            // 创建新节点并连接到父节点
             cur = new Node(key, value);
             if (parent->_key < key)
             {
@@ -392,10 +393,11 @@ namespace kv
             return true;
         }
 
+        // 查找键对应的节点
         Node* Find(const K& key)
         {
             Node* cur = _root;
-            while (cur)
+            while (cur != nullptr)
             {
                 if (cur->_key < key)
                 {
@@ -413,6 +415,7 @@ namespace kv
             return nullptr;
         }
 
+        // 删除键值对
         bool Erase(const K& key)
         {
             Node* parent = nullptr;
@@ -429,12 +432,10 @@ namespace kv
                     parent = cur;
                     cur = cur->_left;
                 }
-                else
+                else  // 找到要删除的节点，分三种情况处理
                 {
-                    // 准备删除  20:15继续
-                    if (cur->_left == nullptr)
+                    if (cur->_left == nullptr)  // 情况1：左子节点为空
                     {
-                        //左为空
                         if (cur == _root)
                         {
                             _root = cur->_right;
@@ -451,9 +452,8 @@ namespace kv
                             }
                         }
                     }
-                    else if (cur->_right == nullptr)
+                    else if (cur->_right == nullptr)  // 情况2：右子节点为空
                     {
-                        //右为空
                         if (cur == _root)
                         {
                             _root = cur->_left;
@@ -470,13 +470,12 @@ namespace kv
                             }
                         }
                     }
-                    else
+                    else    // 情况3：左右子节点都不为空
                     {
-                        //左右都不为空
-                        // 右树的最小节点(最左节点)
+                        // 找到右子树的最小节点(后继节点)
                         Node* parent = cur;
                         Node* subLeft = cur->_right;
-                        while (subLeft->_left)
+                        while (subLeft->_left)  // 寻找最左节点
                         {
                             parent = subLeft;
                             subLeft = subLeft->_left;
@@ -490,8 +489,9 @@ namespace kv
                     return true;
                 }
             }
-            return false;
+            return false;   // 未找到要删除的键
         }
+
         void InOrder()
         {
             _InOrder(_root);
