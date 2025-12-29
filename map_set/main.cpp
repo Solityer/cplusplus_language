@@ -36,19 +36,20 @@ void test_set1()
 	}
 	cout << endl;
 
-	// insert的返回类型是pair
-	auto ret1 = s.insert(3);
-	cout << ret1.second << endl;
+	// insert的返回类型是pair<iterator, bool>
+	// first：指向插入元素的迭代器
+	// second：是否插入成功（true表示成功，false表示已存在）
+	auto ret1 = s.insert(3); // 插入3，auto自动推导为pair类型
+	cout << ret1.second << endl; // 输出插入结果：1表示成功插入
 
+	// 显式指定返回类型
 	pair<set<int>::iterator, bool> ret2 = s.insert(4);
 	cout << ret2.second << endl;
-
 	for (auto e : s)
 	{
 		cout << e << " ";
 	}
 	cout << endl;
-
 	// 删除存在的(直接用值删除)
 	s.erase(2);
 
@@ -60,6 +61,7 @@ void test_set1()
 		s.erase(it2);
 	}
 
+	// 使用count函数检查元素是否存在（返回0或1，因为set元素唯一）
 	if (s.count(3))
 	{
 		cout << "3在" << endl;
@@ -68,10 +70,8 @@ void test_set1()
 	{
 		cout << "3不在" << endl;
 	}
-
-	// 删除不存在的
-	s.erase(30);
-
+	// 删除不存在的元素（不会报错）
+	s.erase(30);  // 尝试删除30（不存在，无效果）
 	for (auto e : s)
 	{
 		cout << e << " ";
@@ -87,12 +87,12 @@ void test_set2()
 	for (int i = 1; i < 10; i++)
 		myset1.insert(i * 10); // 10 20 30 40 50 60 70 80 90
 
-	itlow = myset1.lower_bound(25);   // lower_bound返回 大于等于 val值位置的iterator
-	itup = myset1.upper_bound(70);    // upper_bound返回 大于 val值位置的iterator
-
-	// [25, 70]
-	myset1.erase(itlow, itup);  // 10 20 70 80 90
-
+	// lower_bound返回第一个 >= val 的元素位置的迭代器
+	itlow = myset1.lower_bound(25); // 查找第一个>=25的元素，指向30
+	// upper_bound返回第一个 > val 的元素位置的迭代器
+	itup = myset1.upper_bound(70); // 查找第一个>70的元素，指向80
+	// 删除区间[25, 70] -> 实际删除[30, 70]
+	myset1.erase(itlow, itup);  // 删除从itlow到itup之间的元素（左闭右开）
 	for (auto e : myset1)
 	{
 		cout << e << " ";
@@ -101,22 +101,21 @@ void test_set2()
 
 	//////////////////////////////////////////////////////////////
 	std::set<int> myset2;
-
 	for (int i = 1; i <= 5; i++)
 		myset2.insert(i * 10);   // myset: 10 20 30 40 50
 
-	//pair<set<int>::const_iterator, set<int>::const_iterator> ret;
 	// equal_range() 函数是C++ STL中的一个二分查找算法
-	auto ret = myset2.equal_range(40);
-
+	// 返回一个pair，first是lower_bound的结果，second是upper_bound的结果
+	//pair<set<int>::const_iterator, set<int>::const_iterator> ret;
+	auto ret = myset2.equal_range(40); // 查找40的边界
 	std::cout << "the lower bound points to: " << *ret.first << '\n';   // >= val
 	std::cout << "the upper bound points to: " << *ret.second << '\n';  // > val
-
 }
 
 void test_set3()
 {
-	// 排序
+	// multiset允许相同的字符进入同一个set容器中
+	// multset 仅排序不去重
 	multiset<int> s;
 	s.insert(5);
 	s.insert(2);
@@ -127,9 +126,7 @@ void test_set3()
 	s.insert(1);
 	s.insert(5);
 	s.insert(2);
-
-	// multiset允许相同的字符进入同一个set容器中
-	// multset 仅排序
+	// 遍历multiset（自动排序）
 	multiset<int>::iterator it = s.begin();
 	while (it != s.end())
 	{
@@ -138,7 +135,7 @@ void test_set3()
 	}
 	cout << endl;
 
-	// 如果有多个值，find返回中序第一个val
+	// 查找元素：如果有多个相同值，find返回中序遍历的第一个val
 	it = s.find(2);
 	while (it != s.end())
 	{
@@ -150,9 +147,12 @@ void test_set3()
 	// 统计并输出容器s中值为1的元素个数
 	cout << s.count(1) << endl;
 
-	//auto ret = s.equal_range(val);   // 返回[>=val, >val)
-	//s.erase(ret.first, ret.second);
-	size_t n =  s.erase(2);
+	// equal_range示例：返回[>=val, >val)的迭代器对
+	// auto ret = s.equal_range(val);
+	// s.erase(ret.first, ret.second); // 删除所有值为val的元素
+
+	// 删除所有值为2的元素，返回删除的元素个数
+	size_t n = s.erase(2); // 删除值为2的所有元素
 	cout << n << endl;  // 删除的个数
 	for (auto e : s)
 	{
@@ -163,9 +163,10 @@ void test_set3()
 
 void test_map1()
 {
+	// map是键值对容器，键唯一，自动按键排序
 	map<string, string> dict0;
 	dict0.insert(make_pair("left", "左边"));
-	dict0.insert(make_pair("left", "剩余"));
+	dict0.insert(make_pair("left", "剩余"));   // 插入相同的key，不会插入（value不会被更新）
 	// 插入不会关注value的值，只关注key
 	for (auto& kv : dict0)
 	{
@@ -173,36 +174,38 @@ void test_map1()
 	}
 
 	map<string, string> dict;
-	dict.insert(pair<string, string>("sort", "排序"));
+	dict.insert(pair<string, string>("sort", "排序"));   // 使用pair构造函数
 	dict.insert(pair<string, string>("insert", "插入"));
 	dict.insert(pair<const char*, const char*>("left", "左边"));
-	dict.insert(make_pair("right", "右边")); // 推荐这个
+	dict.insert(make_pair("right", "右边")); // 推荐使用make_pair
 
-	dict["erase"];  // 插入
-	cout << dict["erase"] << endl; // 查找
-	dict["erase"] = "删除"; // 修改
-	cout << dict["erase"] << endl;// 查找
-	dict["test"] = "测试";  // 插入+修改
-	dict["left"] = "左边、剩余"; // 修改
+	// 使用[]操作符
+	dict["erase"]; // 如果key不存在，会插入新元素，value使用默认值（空字符串）
+	cout << dict["erase"] << endl; // 查找并输出value（空字符串）
+	dict["erase"] = "删除"; // 修改已存在key的value
+	cout << dict["erase"] << endl; // 再次输出value（"删除"）
+	dict["test"] = "测试"; // 插入+修改：key不存在则插入，存在则修改
+	dict["left"] = "左边、剩余"; // 修改已存在的key的value
 
 	string s1("xxx"), s2("yyy");
 	dict.insert(make_pair(s1, s2));
 
+	// 使用迭代器遍历map
 	map<string, string>::iterator it = dict.begin();
 	while (it != dict.end())
 	{
-		cout << (*it).first << ":"<<(*it).second << endl;
-		cout << it.operator->()->first << ":" << it.operator->()->second << endl;
-		cout << it->first << ":" << it->second << endl;
-
-		++it;
+		// 三种访问方式
+		cout << (*it).first << ":" << (*it).second << endl; // 使用解引用
+		cout << it.operator->()->first << ":" << it.operator->()->second << endl; // 使用operator->
+		cout << it->first << ":" << it->second << endl; // 使用箭头操作符（最常用）
+		++it; // 移动到下一个元素
 	}
 	cout << endl;
 
 	for (auto& kv : dict)
 	{
-		// kv.first += 'x';
-		kv.second += 'x';
+		// kv.first += 'x'; // 错误：key是const，不能修改
+		kv.second += 'x'; // 正确：value可以修改
 		cout << kv.first << ":" << kv.second << endl;
 	}
 }
@@ -210,7 +213,8 @@ void test_map1()
 void test_map2()
 {
 	string arr[] = { "苹果", "西瓜", "苹果", "西瓜", "苹果", "苹果", "西瓜", "苹果", "香蕉", "苹果", "香蕉" };
-	map<string, int> countMap;
+	map<string, int> countMap;  // 创建map，键是string（水果名），值是int（出现次数）
+	// 方法1：使用find查找并统计
 	for (auto& str : arr)
 	{
 		auto ret = countMap.find(str);
@@ -231,12 +235,19 @@ void test_map2()
 		cout << kv.first << ":" << kv.second << endl;
 	}
 
+
+	// 方法2：使用[]操作符简化统计
+	// 先清空map
+	countMap.clear(); // 清空map
+	// 或者创建新的map
+	map<string, int> countMap2;
 	for (auto& str : arr)
 	{
-		countMap[str]++;
+		countMap2[str]++; // []操作符会自动插入不存在的key，value默认0，然后++
 	}
 
-	for (auto& kv : countMap)
+	// 输出统计结果
+	for (auto& kv : countMap2)
 	{
 		cout << kv.first << ":" << kv.second << endl;
 	}
