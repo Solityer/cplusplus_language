@@ -1,7 +1,7 @@
 #pragma once
 #include"HashTable.h"
 
-namespace pzh_set
+namespace pzh
 {
     template<class K, class Hash = HashFunc<K>>
     class unordered_set
@@ -14,18 +14,18 @@ namespace pzh_set
             }
         };
     public:
-        typedef typename hash_bucket::HashTable<K, K, SetKeyOfT, Hash>::const_iterator iterator;
-        typedef typename hash_bucket::HashTable<K, K, SetKeyOfT, Hash>::const_iterator const_iterator;
+        typedef typename pzh_hash_bucket::HashTable<K, K, SetKeyOfT, Hash>::iterator iterator;
+        typedef typename pzh_hash_bucket::HashTable<K, K, SetKeyOfT, Hash>::const_iterator const_iterator;
 
-        /*iterator begin()
-        {
-            return _ht.begin();
-        }
+         iterator begin()
+         {
+             return _ht.begin();
+         }
 
-        iterator end()
-        {
-            return _ht.end();
-        }*/
+         iterator end()
+         {
+             return _ht.end();
+         }
 
         const_iterator begin() const
         {
@@ -53,12 +53,11 @@ namespace pzh_set
             return _ht.Erase(key);
         }
     private:
-        hash_bucket::HashTable<K, K, SetKeyOfT, Hash> _ht;
+        pzh_hash_bucket::HashTable<K, K, SetKeyOfT, Hash> _ht;
     };
 
     void test_set()
     {
-        // 17:05
         unordered_set<int> us;
         us.insert(5);
         us.insert(15);

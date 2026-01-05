@@ -1,407 +1,336 @@
-// ·ÀÖ¹Í·ÎÄ¼şÖØ¸´°üº¬
+#pragma once
 #include<vector>
-#include<string>
 
-// ¹şÏ£º¯ÊıÄ£°å - Ä¬ÈÏ°æ±¾£¨ÊÊÓÃÓÚÕûÊıÀàĞÍ£©
 template<class K>
+// é»˜è®¤çš„ä»¿å‡½æ•°åŠŸèƒ½ï¼Œå¯ä»¥ç›´æ¥è¿›è¡Œè½¬æ¢
 struct HashFunc
 {
-	// ÖØÔØº¯Êıµ÷ÓÃÔËËã·û£¬½«key×ª»»Îªsize_tÀàĞÍ
-	size_t operator()(const K& key)
-	{
-		return (size_t)key;  // Ö±½ÓÀàĞÍ×ª»»
-	}
+    size_t operator()(const K& key)
+    {
+        // å¦‚æœkeyå€¼å¯ä»¥è½¬æ¢æˆsize_tæ•´å‹ï¼Œå°±ç›´æ¥è¿›è¡Œè½¬æ¢
+        return (size_t)key;
+    }
 };
 
-// ¹şÏ£º¯ÊıÌØ»¯°æ±¾ - Õë¶ÔstringÀàĞÍ
-// ×¢Òâ£ºÔ­´úÂëÈ±ÉÙtemplate<>£¬ÒÑĞŞÕı
+// é’ˆå¯¹stringç±»å‹è¿›è¡Œè½¬æ¢ï¼ˆé’ˆå¯¹stringçš„ç‰¹åŒ–ç‰ˆæœ¬ï¼‰
 template<>
 struct HashFunc<string>
 {
-	size_t operator()(const string& key)
-	{
-		// BKDR¹şÏ£Ëã·¨
-		size_t hash = 0;
-		for (auto e : key)  // ±éÀú×Ö·û´®Ã¿¸ö×Ö·û
-		{
-			hash *= 31;      // ³ËÒÔÖÊÊı31
-			hash += e;       // ¼ÓÉÏ×Ö·ûÖµ
-		}
-		return hash;
-	}
+    size_t operator()(const string& key)
+    {
+        size_t hash = 0;
+        for (auto e : key)
+        {
+            hash *= 31;
+            hash += e;
+        }
+        cout << key << ":" << hash << endl;
+        return hash;
+    }
 };
 
-// ¿ª·Å¶¨Ö··¨ÃüÃû¿Õ¼ä
-namespace open_address
+// å¼€æ”¾åœ°å€æ³•
+namespace pzh_open_address
 {
-	// Ã¶¾ÙÀàĞÍ£¬±íÊ¾¹şÏ£±íÖĞÃ¿¸öÎ»ÖÃµÄ×´Ì¬
-	enum Status
-	{
-		EMPTY,    // ¿ÕÎ»ÖÃ
-		EXIST,    // ÓĞÊı¾İ
-		DELETE    // ÒÑÉ¾³ı£¨¶èĞÔÉ¾³ı£©
-	};
+    enum Status
+    {
+        EMPTY,
+        EXIST,
+        DELETE
+    };
 
-	// ¹şÏ£±í´æ´¢µÄÊı¾İ½á¹¹
-	template<class K, class V>
-	struct HashData
-	{
-		pair<K, V> _kv;  // ¼üÖµ¶Ô
-		Status _s;       // Î»ÖÃ×´Ì¬
-	};
+    template<class K, class V>
+    struct HashData
+    {
+        pair<K, V> _kv;
+        Status _s; //çŠ¶æ€
+    };
 
-	// ¹şÏ£±íÀàÄ£°å
-	// Hash£º¹şÏ£º¯ÊıÀàĞÍ£¬Ä¬ÈÏÎªHashFunc<K>
-	template<class K, class V, class Hash = HashFunc<K>>
-	class HashTable
-	{
-	public:
-		// ¹¹Ôìº¯Êı£¬³õÊ¼»¯¹şÏ£±í´óĞ¡Îª10
-		HashTable()
-		{
-			_tables.resize(10);
-		}
+    //å› ä¸ºä¸æ˜¯æ‰€æœ‰çš„keyéƒ½å¯ä»¥æ­£å¸¸çš„ç»§ç»­å–æ¨¡è¿ç®—ï¼Œæ‰€ä»¥éœ€è¦åŠ å…¥ä»¿å‡½æ•°Hash
+    template<class K, class V, class Hash = HashFunc<K>>
+    class HashTable_pre
+    {
+    public:
+        HashTable_pre()
+        {
+            _tables.resize(10);  //ä¸€å¼€å§‹å°±ç»™å“ˆå¸Œè¡¨å¼€ä¸€ç‚¹ç©ºé—´
+        }
 
-		// ²åÈë¼üÖµ¶Ô
-		bool Insert(const pair<K, V>& kv)
-		{
-			// Èç¹û¼üÒÑ´æÔÚ£¬·µ»Øfalse
-			if (Find(kv.first))
-				return false;
+        bool Insert(const pair<K, V> &kv)
+        {
+            if (Find(kv.first))
+                return false;
+            // è´Ÿè½½å› å­0.7å°±æ‰©å®¹
+            if (_n * 10 / _tables.size() == 7)
+            {
+                size_t newSize = _tables.size() * 2;  //å°†æ—§è¡¨æ‰©å®¹åŸæ¥çš„2å€
+                HashTable_pre<K, V, Hash> newHT;  // æ‰©å®¹éœ€è¦é‡æ–°æ˜ å°„
+                newHT._tables.resize(newSize);
+                // éå†æ—§è¡¨
+                for (size_t i = 0; i < _tables.size(); i++)
+                {
+                    if (_tables[i]._s == EXIST)
+                    {
+                        newHT.Insert(_tables[i]._kv);
+                    }
+                }
+                // äº¤æ¢æ–°æ—§è¡¨çš„å­˜å‚¨ç©ºé—´
+                _tables.swap(newHT._tables);
+            }
+            Hash hf;
+            size_t hashi = hf(kv.first) % _tables.size();  // ç®—èµ·å§‹çš„ç¬¬ä¸€ä¸ªä½ç½®
+            while (_tables[hashi]._s == EXIST)  //èµ·å§‹ä½ç½®çš„çŠ¶æ€æ˜¯â€œå­˜åœ¨â€
+            {
+                hashi++;
+                hashi %= _tables.size();
+            }
+            _tables[hashi]._kv = kv;
+            _tables[hashi]._s = EXIST;
+            ++_n;
+            return true;
+        }
 
-			// ¸ºÔØÒò×Ó´ïµ½0.7Ê±À©Èİ
-			// _nÊÇÔªËØ¸öÊı£¬_tables.size()ÊÇ±í´óĞ¡
-			if (_n * 10 / _tables.size() == 7)  // µÈ¼ÛÓÚ_n/_tables.size() >= 0.7
-			{
-				// ĞÂ±í´óĞ¡ÎªÔ­À´µÄ2±¶
-				size_t newSize = _tables.size() * 2;
-				// ´´½¨ĞÂµÄ¹şÏ£±í
-				HashTable<K, V, Hash> newHT;
-				newHT._tables.resize(newSize);
+        HashData<K, V>* Find(const K& key)
+        {
+            Hash hf;
+            size_t hashi = hf(key) % _tables.size();
+            while (_tables[hashi]._s != EMPTY)
+            {
+                if (_tables[hashi]._s == EXIST && _tables[hashi]._kv.first == key)
+                {
+                    return &_tables[hashi];
+                }
+                hashi++;
+                hashi %= _tables.size();
+            }
+            return NULL;
+        }
 
-				// ±éÀú¾É±í£¬½«ËùÓĞ´æÔÚµÄÔªËØÖØĞÂ²åÈëµ½ĞÂ±í
-				for (size_t i = 0; i < _tables.size(); i++)
-				{
-					if (_tables[i]._s == EXIST)  // Ö»´¦Àí´æÔÚµÄÔªËØ
-					{
-						newHT.Insert(_tables[i]._kv);
-					}
-				}
+        // ä¼ªåˆ é™¤æ³•
+        /*åˆ é™¤3åï¼Œå†æ’å…¥3ï¼Œç”±äºåªæ˜¯æ”¹å˜äº†çŠ¶æ€ï¼Œå¹¶æ²¡æœ‰çœŸæ­£åˆ é™¤è¿™ä¸ªå€¼*/
+        bool Erase(const K& key)
+        {
+            HashData<K, V>* ret = Find(key);
+            if (ret)
+            {
+                ret->_s = DELETE;
+                --_n;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
-				// ½»»»ĞÂ¾É±íµÄ´æ´¢¿Õ¼ä
-				_tables.swap(newHT._tables);
-			}
+        void Print()
+        {
+            for (size_t i = 0; i < _tables.size(); i++)
+            {
+                if (_tables[i]._s == EXIST)
+                {
+                    //printf("[%d]->%d\n", i, _tables[i]._kv.first);
+                    cout << "[" << i << "]->" << _tables[i]._kv.first <<":" << _tables[i]._kv.second<< endl;
+                }
+                else if (_tables[i]._s == EMPTY)
+                {
+                    printf("[%d]->\n", i);
+                }
+                else
+                {
+                    printf("[%d]->D\n", i);
+                }
+            }
+            cout << endl;
+        }
 
-			// ´´½¨¹şÏ£º¯Êı¶ÔÏó
-			Hash hf;
+    private:
+        vector<HashData<K, V>> _tables;
+        size_t _n = 0; // å­˜å‚¨çš„å…³é”®å­—çš„ä¸ªæ•°
+    };
 
-			// ¼ÆËã³õÊ¼¹şÏ£Î»ÖÃ
-			size_t hashi = hf(kv.first) % _tables.size();
+    void TestHT1()  //æ²¡åŠ ä»¿å‡½æ•°å‚æ•°ä¹‹å‰çš„æµ‹è¯•
+    {
+        // å¦‚æœæ²¡æœ‰ä¼ ç¬¬ä¸‰ä¸ªæ¨¡æ¿å‚æ•°ï¼Œå°±é»˜è®¤æŒ‰ç…§HashFunåŠŸèƒ½è¿›è¡Œè½¬æ¢
+        HashTable_pre<int, int> ht;
+        int a[] = { 4,14,24,34,5,7,1 };
+        for (auto e : a)
+        {
+            ht.Insert(make_pair(e, e));
+        }
+        ht.Insert(make_pair(3, 3));
+        ht.Insert(make_pair(3, 3));
+        ht.Insert(make_pair(-3, -3));
+        ht.Print();
+        ht.Erase(3);
+        ht.Print();
+        if (ht.Find(3))
+        {
+            cout << "3 exist" << endl;
+        }
+        else
+        {
+            cout << "3 not exist " << endl;
+        }
+        ht.Insert(make_pair(3, 3));
+        ht.Insert(make_pair(23, 3));
+        ht.Print();
+    }
 
-			// ÏßĞÔÌ½²â£ºÈç¹ûÎ»ÖÃ±»Õ¼ÓÃ£¬¾ÍÏòºó²éÕÒ
-			while (_tables[hashi]._s == EXIST)
-			{
-				hashi++;            // ÏòºóÒÆ¶¯
-				hashi %= _tables.size();  // Ñ­»·µ½±íÍ·
-			}
-
-			// ÕÒµ½¿ÕÎ»£¬²åÈëÊı¾İ
-			_tables[hashi]._kv = kv;
-			_tables[hashi]._s = EXIST;  // ±ê¼ÇÎª´æÔÚ
-			++_n;  // ÔªËØ¼ÆÊı¼Ó1
-
-			return true;
-		}
-
-		// ²éÕÒ¼ü¶ÔÓ¦µÄÊı¾İ
-		HashData<K, V>* Find(const K& key)
-		{
-			Hash hf;  // ¹şÏ£º¯Êı¶ÔÏó
-
-			// ¼ÆËã¹şÏ£Î»ÖÃ
-			size_t hashi = hf(key) % _tables.size();
-
-			// ÏßĞÔÌ½²â²éÕÒ
-			// Ö»ÒªÎ»ÖÃ²»ÊÇ¿Õ£¨¿ÉÄÜÊÇ´æÔÚ»òÉ¾³ı×´Ì¬£©£¬¾Í¼ÌĞø²éÕÒ
-			while (_tables[hashi]._s != EMPTY)
-			{
-				// Èç¹ûÎ»ÖÃÊÇ´æÔÚ×´Ì¬£¬ÇÒ¼üÆ¥Åä£¬·µ»Ø¸ÃÎ»ÖÃÖ¸Õë
-				if (_tables[hashi]._s == EXIST &&
-					_tables[hashi]._kv.first == key)
-				{
-					return &_tables[hashi];
-				}
-
-				// ²»Æ¥Åä£¬¼ÌĞøÏòºó²éÕÒ
-				hashi++;
-				hashi %= _tables.size();  // Ñ­»·µ½±íÍ·
-			}
-
-			// Î´ÕÒµ½£¬·µ»Ø¿ÕÖ¸Õë
-			return NULL;
-		}
-
-		// É¾³ı¼ü¶ÔÓ¦µÄÊı¾İ£¨Î±É¾³ı·¨£©
-		bool Erase(const K& key)
-		{
-			// ÏÈ²éÕÒ¼üÊÇ·ñ´æÔÚ
-			HashData<K, V>* ret = Find(key);
-			if (ret)
-			{
-				// ±ê¼ÇÎªÉ¾³ı×´Ì¬£¬¶ø²»ÊÇÕæÕıÒÆ³ıÊı¾İ
-				ret->_s = DELETE;
-				--_n;  // ÔªËØ¼ÆÊı¼õ1
-				return true;
-			}
-			else
-			{
-				return false;  // ¼ü²»´æÔÚ
-			}
-		}
-
-		// ´òÓ¡¹şÏ£±íÄÚÈİ£¨ÓÃÓÚµ÷ÊÔ£©
-		void Print()
-		{
-			for (size_t i = 0; i < _tables.size(); i++)
-			{
-				if (_tables[i]._s == EXIST)
-				{
-					// ´òÓ¡´æÔÚµÄÊı¾İ
-					cout << "[" << i << "]->" << _tables[i]._kv.first
-						 << ":" << _tables[i]._kv.second << endl;
-				}
-				else if (_tables[i]._s == EMPTY)
-				{
-					// ´òÓ¡¿ÕÎ»ÖÃ
-					printf("[%d]->\n", i);
-				}
-				else  // DELETE×´Ì¬
-				{
-					// ´òÓ¡É¾³ıÎ»ÖÃ
-					printf("[%d]->D\n", i);
-				}
-			}
-			cout << endl;
-		}
-
-	private:
-		vector<HashData<K, V>> _tables;  // ¹şÏ£±í´æ´¢Êı×é
-		size_t _n = 0;  // ´æ´¢µÄ¹Ø¼ü×ÖµÄ¸öÊı
-	};
-
-	// ²âÊÔº¯Êı1£º²âÊÔÕûÊıÀàĞÍ
-	void TestHT1()
-	{
-		HashTable<int, int> ht;
-		int a[] = { 4,14,24,34,5,7,1 };
-		for (auto e : a)
-		{
-			ht.Insert(make_pair(e, e));
-		}
-
-		ht.Insert(make_pair(3, 3));
-		ht.Insert(make_pair(3, 3));  // ÖØ¸´²åÈë£¬Ó¦¸ÃÊ§°Ü
-		ht.Insert(make_pair(-3, -3));
-		ht.Print();
-
-		ht.Erase(3);
-		ht.Print();
-
-		if (ht.Find(3))
-		{
-			cout << "3´æÔÚ" << endl;
-		}
-		else
-		{
-			cout << "3²»´æÔÚ" << endl;
-		}
-
-		ht.Insert(make_pair(3, 3));
-		ht.Insert(make_pair(23, 3));
-		ht.Print();
-	}
-
-	// ²âÊÔº¯Êı2£º²âÊÔ×Ö·û´®ÀàĞÍ
-	void TestHT2()
-	{
-		string arr[] = { "Ïã½¶", "Ìğ¹Ï","Æ»¹û", "Î÷¹Ï", "Æ»¹û", "Î÷¹Ï", "Æ»¹û", "Æ»¹û", "Î÷¹Ï", "Æ»¹û", "Ïã½¶", "Æ»¹û", "Ïã½¶" };
-
-		// Ê¹ÓÃ×Ö·û´®ÌØ»¯µÄ¹şÏ£º¯Êı
-		HashTable<string, int> ht;
-
-		for (auto& e : arr)
-		{
-			// ²éÕÒÔªËØÊÇ·ñ´æÔÚ
-			HashData<string, int>* ret = ht.Find(e);
-			if (ret)
-			{
-				// ´æÔÚ£¬¼ÆÊıÆ÷¼Ó1
-				ret->_kv.second++;
-			}
-			else
-			{
-				// ²»´æÔÚ£¬²åÈëĞÂÔªËØ
-				ht.Insert(make_pair(e, 1));
-			}
-		}
-
-		ht.Print();
-
-		// ²âÊÔ¸ü¶à²åÈë
-		ht.Insert(make_pair("apple", 1));
-		ht.Insert(make_pair("sort", 1));
-		ht.Insert(make_pair("abc", 1));
-		ht.Insert(make_pair("acb", 1));
-		ht.Insert(make_pair("aad", 1));
-
-		ht.Print();
-	}
+    void TestHT2()  //æ²¡åŠ ä»¿å‡½æ•°å‚æ•°ä¹‹å‰çš„æµ‹è¯•
+    {
+        string arr[] = { "é¦™è•‰", "ç”œç“œ","è‹¹æœ", "è¥¿ç“œ", "è‹¹æœ", "è¥¿ç“œ", "è‹¹æœ", "è‹¹æœ", "è¥¿ç“œ", "è‹¹æœ", "é¦™è•‰", "è‹¹æœ", "é¦™è•‰" };
+        HashTable_pre<string, int> ht;
+        for (auto& e : arr)
+        {
+            //auto ret = ht.Find(e);
+            HashData<string, int>* ret = ht.Find(e);
+            if (ret)
+            {
+                ret->_kv.second++;
+            }
+            else
+            {
+                ht.Insert(make_pair(e, 1));
+            }
+        }
+        ht.Print();
+        ht.Insert(make_pair("apple", 1));
+        ht.Insert(make_pair("sort", 1));
+        ht.Insert(make_pair("abc", 1));
+        ht.Insert(make_pair("acb", 1));
+        ht.Insert(make_pair("aad", 1));
+        ht.Print();
+    }
 }
 
-// ¹şÏ£Í°£¨À­Á´·¨£©ÃüÃû¿Õ¼ä
-namespace hash_bucket
+namespace pzh_hash_bucket
 {
-	// ¹şÏ£Í°½Úµã
 	template<class T>
 	struct HashNode
 	{
-		HashNode<T>* _next;  // Ö¸ÏòÏÂÒ»¸ö½ÚµãµÄÖ¸Õë
-		T _data;             // ´æ´¢µÄÊı¾İ
+		HashNode<T>* _next;
+		T _data;
 
-		// ¹¹Ôìº¯Êı
 		HashNode(const T& data)
 			:_data(data)
 			,_next(nullptr)
 		{}
 	};
 
-	// Ç°ÖÃÉùÃ÷£¬ÒòÎªµü´úÆ÷ÖĞĞèÒªÓÃµ½HashTable
+	// å‰ç½®å£°æ˜å“ˆå¸Œè¡¨ç±»ï¼Œå› ä¸ºè¿­ä»£å™¨éœ€è¦ç”¨åˆ°
 	template<class K, class T, class KeyOfT, class Hash>
 	class HashTable;
 
-	// ¹şÏ£±íµü´úÆ÷
+	// å“ˆå¸Œè¡¨è¿­ä»£å™¨æ¨¡æ¿ç±»
 	template<class K, class T, class Ref, class Ptr, class KeyOfT, class Hash>
 	struct __HTIterator
 	{
-		// ÀàĞÍ±ğÃû¶¨Òå
 		typedef HashNode<T> Node;
-		typedef __HTIterator<K, T, Ref, Ptr, KeyOfT, Hash> Self;
+		typedef __HTIterator<K, T, Ref, Ptr, KeyOfT, Hash> Self;  // è¿­ä»£å™¨è‡ªèº«ç±»å‹åˆ«å
+		Node* _node;
+		const HashTable<K, T, KeyOfT, Hash>* _pht;  // æŒ‡å‘æ‰€å±å“ˆå¸Œè¡¨çš„æŒ‡é’ˆ
+		// vector<Node*> * _ptb;
+		size_t _hashi;   // å½“å‰æ¡¶çš„ç´¢å¼•
 
-		// µü´úÆ÷³ÉÔ±±äÁ¿
-		Node* _node;       // µ±Ç°½ÚµãÖ¸Õë
-		const HashTable<K, T, KeyOfT, Hash>* _pht;  // Ö¸Ïò¹şÏ£±íµÄÖ¸Õë
-		size_t _hashi;     // µ±Ç°Í°µÄË÷Òı
-
-		// ¹¹Ôìº¯Êı£¨¿ÉĞŞ¸Ä¹şÏ£±í°æ±¾£©
+		// æ„é€ å‡½æ•°ï¼ˆéconstç‰ˆæœ¬ï¼‰
 		__HTIterator(Node* node, HashTable<K, T, KeyOfT, Hash>* pht, size_t hashi)
 			:_node(node)
 			,_pht(pht)
 			,_hashi(hashi)
 		{}
 
-		// ¹¹Ôìº¯Êı£¨const¹şÏ£±í°æ±¾£©
+		// æ„é€ å‡½æ•°ï¼ˆconstç‰ˆæœ¬ï¼‰
 		__HTIterator(Node* node, const HashTable<K, T, KeyOfT, Hash>* pht, size_t hashi)
 			:_node(node)
 			, _pht(pht)
 			, _hashi(hashi)
 		{}
 
-		// Ç°×º++ÔËËã·ûÖØÔØ
+		// å‰ç½®++è¿ç®—ç¬¦é‡è½½
 		Self& operator++()
 		{
-			// Èç¹ûµ±Ç°Í°»¹ÓĞÏÂÒ»¸ö½Úµã
 			if (_node->_next)
 			{
-				// ÒÆ¶¯µ½µ±Ç°Í°µÄÏÂÒ»¸ö½Úµã
+				// å½“å‰æ¡¶è¿˜æœ‰èŠ‚ç‚¹ï¼Œèµ°åˆ°ä¸‹ä¸€ä¸ªèŠ‚ç‚¹
 				_node = _node->_next;
 			}
 			else
 			{
-				// µ±Ç°Í°ÒÑ±éÀúÍê£¬ÕÒÏÂÒ»¸ö·Ç¿ÕÍ°
-				++_hashi;  // ÒÆ¶¯µ½ÏÂÒ»¸öÍ°
-
-				// Ñ­»·²éÕÒÏÂÒ»¸ö·Ç¿ÕÍ°
+				// å½“å‰æ¡¶å·²ç»èµ°å®Œäº†ï¼Œæ‰¾ä¸‹ä¸€ä¸ªæ¡¶å¼€å§‹
+				//KeyOfT kot;
+				//Hash hf;
+				//size_t hashi = hf(kot(_node->_data)) % _pht._tables.size();
+				++_hashi;
 				while (_hashi < _pht->_tables.size())
 				{
-					if (_pht->_tables[_hashi])  // Í°²»Îª¿Õ
+					if (_pht->_tables[_hashi])
 					{
-						_node = _pht->_tables[_hashi];  // Ö¸ÏòÍ°µÄµÚÒ»¸ö½Úµã
+						_node = _pht->_tables[_hashi];
 						break;
 					}
-					++_hashi;  // ¼ÌĞø²éÕÒÏÂÒ»¸öÍ°
-				}
 
-				// Èç¹û±éÀúÍêËùÓĞÍ°£¬½«½ÚµãÉèÎªnullptr
+					++_hashi;
+				}
 				if (_hashi == _pht->_tables.size())
 				{
 					_node = nullptr;
 				}
 			}
-
 			return *this;
 		}
 
-		// ½âÒıÓÃÔËËã·ûÖØÔØ
+		// è§£å¼•ç”¨è¿ç®—ç¬¦é‡è½½
 		Ref operator*()
 		{
 			return _node->_data;
 		}
 
-		// ¼ıÍ·ÔËËã·ûÖØÔØ
 		Ptr operator->()
 		{
 			return &_node->_data;
 		}
 
-		// ²»µÈÓÚÔËËã·ûÖØÔØ
 		bool operator!=(const Self& s)
 		{
 			return _node != s._node;
 		}
 	};
 
-	// ¹şÏ£±íÀàÄ£°å£¨¹şÏ£Í°ÊµÏÖ£©
-	// K: ¼üÀàĞÍ
-	// T: ÖµÀàĞÍ£¨¶ÔÓÚunordered_mapÊÇpair<K,V>£¬¶ÔÓÚunordered_setÊÇK£©
-	// KeyOfT: ´ÓTÖĞÌáÈ¡¼üµÄ·Âº¯Êı
-	// Hash: ¹şÏ£º¯ÊıÀàĞÍ
+	// å“ˆå¸Œè¡¨æ¨¡æ¿ç±»
+	// unordered_set -> Hashtable<K, K>
+	// unordered_map -> Hashtable<K, pair<K, V>>
 	template<class K, class T, class KeyOfT, class Hash>
 	class HashTable
 	{
 		typedef HashNode<T> Node;
 
-		// ÉùÃ÷µü´úÆ÷ÎªÓÑÔª£¬Ê¹ÆäÄÜ·ÃÎÊË½ÓĞ³ÉÔ±
-		template<class K, class T, class Ref, class Ptr, class KeyOfT, class Hash>
+		// å£°æ˜è¿­ä»£å™¨ä¸ºå‹å…ƒç±»ï¼Œä½¿å…¶å¯ä»¥è®¿é—®ç§æœ‰æˆå‘˜
+		template<class K1, class T1, class Ref, class Ptr, class KeyOfT1, class Hash1>
 		friend struct __HTIterator;
 
 	public:
-		// µü´úÆ÷ÀàĞÍ¶¨Òå
-		typedef __HTIterator<K, T, T&, T*, KeyOfT, Hash> iterator;
+		typedef __HTIterator<K, T, T&, T*, KeyOfT, Hash> iterator;  // è¿­ä»£å™¨ç±»å‹åˆ«å
 		typedef __HTIterator<K, T, const T&, const T*, KeyOfT, Hash> const_iterator;
 
-		// ·µ»ØÖ¸ÏòµÚÒ»¸öÔªËØµÄµü´úÆ÷
 		iterator begin()
 		{
-			// ²éÕÒµÚÒ»¸ö·Ç¿ÕÍ°
 			for (size_t i = 0; i < _tables.size(); i++)
 			{
-				if (_tables[i])  // Í°²»Îª¿Õ
+				if (_tables[i])
 				{
 					return iterator(_tables[i], this, i);
 				}
 			}
-
-			// Ã»ÓĞÔªËØ£¬·µ»Øend()
 			return end();
 		}
 
-		// ·µ»ØÎ²ºóµü´úÆ÷
 		iterator end()
 		{
+			// è¿”å›ç©ºèŠ‚ç‚¹æŒ‡é’ˆï¼Œç´¢å¼•ä¸º-1
 			return iterator(nullptr, this, -1);
 		}
 
-		// const°æ±¾µÄbegin()
 		const_iterator begin() const
 		{
 			for (size_t i = 0; i < _tables.size(); i++)
@@ -414,19 +343,17 @@ namespace hash_bucket
 			return end();
 		}
 
-		// const°æ±¾µÄend()
+		// this-> const HashTable<K, T, KeyOfT, Hash>*
 		const_iterator end() const
 		{
 			return const_iterator(nullptr, this, -1);
 		}
 
-		// ¹¹Ôìº¯Êı£¬³õÊ¼»¯Í°Êı×é´óĞ¡Îª10
 		HashTable()
 		{
 			_tables.resize(10);
 		}
 
-		// Îö¹¹º¯Êı£¬ÊÍ·ÅËùÓĞ½Úµã
 		~HashTable()
 		{
 			for (size_t i = 0; i < _tables.size(); i++)
@@ -434,174 +361,125 @@ namespace hash_bucket
 				Node* cur = _tables[i];
 				while (cur)
 				{
-					Node* next = cur->_next;  // ±£´æÏÂÒ»¸ö½Úµã
-					delete cur;               // É¾³ıµ±Ç°½Úµã
-					cur = next;               // ÒÆ¶¯µ½ÏÂÒ»¸ö½Úµã
+					Node* next = cur->_next;
+					delete cur;
+					cur = next;
 				}
-				_tables[i] = nullptr;  // Í°Ö¸ÕëÖÃ¿Õ
+				_tables[i] = nullptr;
 			}
 		}
 
-		// ²åÈëÊı¾İ
+		// æ’å…¥å…ƒç´ 
 		pair<iterator, bool> Insert(const T& data)
 		{
-			// ´´½¨¹şÏ£º¯ÊıºÍ¼üÌáÈ¡º¯Êı¶ÔÏó
 			Hash hf;
-			KeyOfT kot;
-
-			// Èç¹ûÊı¾İÒÑ´æÔÚ£¬·µ»Øfalse
-			iterator it = Find(kot(data));
+			KeyOfT kot;   // æå–é”®çš„å‡½æ•°å¯¹è±¡
+			iterator it = Find(kot(data));  // å…ˆæŸ¥æ‰¾æ˜¯å¦å·²å­˜åœ¨ç›¸åŒé”®
 			if (it != end())
 				return make_pair(it, false);
-
-			// ¸ºÔØÒò×Ó´ïµ½1Ê±À©Èİ£¨ÔªËØ¸öÊıµÈÓÚÍ°µÄÊıÁ¿£©
+			// è´Ÿè½½å› å­æœ€å¤§åˆ°1
 			if (_n == _tables.size())
 			{
-				// ´´½¨ĞÂµÄÍ°Êı×é£¬´óĞ¡ÎªÔ­À´µÄ2±¶
 				vector<Node*> newTables;
 				newTables.resize(_tables.size() * 2, nullptr);
-
-				// ±éÀú¾É±íµÄËùÓĞÍ°
+				// éå†æ—§è¡¨
 				for (size_t i = 0; i < _tables.size(); i++)
 				{
 					Node* cur = _tables[i];
 					while(cur)
 					{
-						Node* next = cur->_next;  // ±£´æÏÂÒ»¸ö½Úµã
-
-						// ¼ÆËã½ÚµãÔÚĞÂ±íÖĞµÄÎ»ÖÃ
+						Node* next = cur->_next;
+						// æŒªåŠ¨åˆ°æ˜ å°„çš„æ–°è¡¨
 						size_t hashi = hf(kot(cur->_data)) % newTables.size();
-
-						// Í·²å·¨²åÈëĞÂ±í
-						cur->_next = newTables[hashi];
+						cur->_next = newTables[i];
 						newTables[hashi] = cur;
-
-						// ´¦ÀíÏÂÒ»¸ö½Úµã
 						cur = next;
 					}
-					_tables[i] = nullptr;  // ¾ÉÍ°ÖÃ¿Õ
+					_tables[i] = nullptr;
 				}
-
-				// ½»»»ĞÂ¾ÉÍ°Êı×é
 				_tables.swap(newTables);
 			}
-
-			// ¼ÆËãÊı¾İÓ¦¸Ã²åÈëµÄÍ°Î»ÖÃ
 			size_t hashi = hf(kot(data)) % _tables.size();
-
-			// ´´½¨ĞÂ½Úµã
 			Node* newnode = new Node(data);
-
-			// Í·²å·¨²åÈëµ½¶ÔÓ¦Í°ÖĞ
+			// å¤´æ’
 			newnode->_next = _tables[hashi];
 			_tables[hashi] = newnode;
-			++_n;  // ÔªËØ¼ÆÊı¼Ó1
-
-			// ·µ»Ø²åÈëµÄµü´úÆ÷ºÍtrue
+			++_n;
 			return make_pair(iterator(newnode, this, hashi), true);
 		}
 
-		// ²éÕÒ¼ü¶ÔÓ¦µÄÊı¾İ
 		iterator Find(const K& key)
 		{
-			Hash hf;
-			KeyOfT kot;
-
-			// ¼ÆËã¼üËùÔÚµÄÍ°
+			Hash hf;     // å“ˆå¸Œå‡½æ•°å¯¹è±¡
+			KeyOfT kot;  // æå–é”®çš„å‡½æ•°å¯¹è±¡
 			size_t hashi = hf(key) % _tables.size();
 			Node* cur = _tables[hashi];
-
-			// ÔÚÍ°ÖĞÏßĞÔ²éÕÒ
 			while (cur)
 			{
-				if (kot(cur->_data) == key)  // ÕÒµ½Æ¥ÅäµÄ¼ü
+				if (kot(cur->_data) == key)
 				{
 					return iterator(cur, this, hashi);
 				}
-				cur = cur->_next;  // ¼ì²éÏÂÒ»¸ö½Úµã
+				cur = cur->_next;
 			}
-
-			// Î´ÕÒµ½£¬·µ»Øend()
 			return end();
 		}
 
-		// É¾³ı¼ü¶ÔÓ¦µÄÊı¾İ
 		bool Erase(const K& key)
 		{
 			Hash hf;
 			KeyOfT kot;
-
-			// ¼ÆËã¼üËùÔÚµÄÍ°
 			size_t hashi = hf(key) % _tables.size();
-			Node* prev = nullptr;  // Ç°Çı½Úµã
+			Node* prev = nullptr;
 			Node* cur = _tables[hashi];
-
-			// ÔÚÍ°ÖĞ²éÕÒÒªÉ¾³ıµÄ½Úµã
 			while (cur)
 			{
-				if (kot(cur->_data) == key)  // ÕÒµ½ÒªÉ¾³ıµÄ½Úµã
+				if (kot(cur->_data) == key)
 				{
-					if (prev == nullptr)  // ÒªÉ¾³ıµÄÊÇÍ°µÄµÚÒ»¸ö½Úµã
+					if (prev == nullptr)
 					{
-						_tables[hashi] = cur->_next;  // ¸üĞÂÍ°Í·Ö¸Õë
+						_tables[hashi] = cur->_next;
 					}
-					else  // ÒªÉ¾³ıµÄÊÇÖĞ¼ä½Úµã
+					else
 					{
-						prev->_next = cur->_next;  // Ìø¹ıµ±Ç°½Úµã
+						prev->_next = cur->_next;
 					}
-					delete cur;  // ÊÍ·Å½ÚµãÄÚ´æ
+					delete cur;
 					return true;
 				}
-
-				// ¼ÌĞø²éÕÒ
 				prev = cur;
 				cur = cur->_next;
 			}
-
-			// Î´ÕÒµ½ÒªÉ¾³ıµÄ¼ü
 			return false;
 		}
 
-		// Í³¼Æ¹şÏ£±íĞÔÄÜĞÅÏ¢£¨ÓÃÓÚµ÷ÊÔ£©
+		// ç»Ÿè®¡å“ˆå¸Œè¡¨ä¿¡æ¯
 		void Some()
 		{
-			size_t bucketSize = 0;     // ·Ç¿ÕÍ°ÊıÁ¿
-			size_t maxBucketLen = 0;   // ×î´óÍ°³¤¶È
-			size_t sum = 0;           // ËùÓĞÍ°ÖĞ½Úµã×ÜÊı
-			double averageBucketLen = 0;  // Æ½¾ùÍ°³¤¶È
-
-			// ±éÀúËùÓĞÍ°
+			size_t bucketSize = 0;
+			size_t maxBucketLen = 0;
+			size_t sum = 0;
+			double averageBucketLen = 0;
 			for (size_t i = 0; i < _tables.size(); i++)
 			{
 				Node* cur = _tables[i];
-
-				// Í³¼Æ·Ç¿ÕÍ°
 				if (cur)
 				{
 					++bucketSize;
 				}
-
-				// Í³¼Æµ±Ç°Í°µÄ³¤¶È
 				size_t bucketLen = 0;
 				while (cur)
 				{
 					++bucketLen;
 					cur = cur->_next;
 				}
-
-				sum += bucketLen;  // ÀÛ¼Ó×Ü½ÚµãÊı
-
-				// ¸üĞÂ×î´óÍ°³¤¶È
+				sum += bucketLen;
 				if (bucketLen > maxBucketLen)
 				{
 					maxBucketLen = bucketLen;
 				}
 			}
-
-			// ¼ÆËãÆ½¾ùÍ°³¤¶È
 			averageBucketLen = (double)sum / (double)bucketSize;
-
-			// Êä³öÍ³¼ÆĞÅÏ¢
 			printf("all bucketSize:%d\n", _tables.size());
 			printf("bucketSize:%d\n", bucketSize);
 			printf("maxBucketLen:%d\n", maxBucketLen);
@@ -609,7 +487,7 @@ namespace hash_bucket
 		}
 
 	private:
-		vector<Node*> _tables;  // Í°Êı×é£¬Ã¿¸öÔªËØÊÇÁ´±íÍ·Ö¸Õë
-		size_t _n = 0;          // ´æ´¢µÄÔªËØ¸öÊı
+		vector<Node*> _tables;
+		size_t _n = 0;
 	};
 }

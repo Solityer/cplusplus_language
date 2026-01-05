@@ -4,7 +4,8 @@ project(hash)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(hash main.cpp
-        HashTable.h
+        HashTable_pre.h
         MyUnorderedMap.h
         MyUnorderedSet.h
-        HashTable_1.h)
+        HashTable.h
+)

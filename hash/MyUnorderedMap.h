@@ -1,6 +1,7 @@
+#pragma once
 #include"HashTable.h"
 
-namespace pzh_map
+namespace pzh
 {
     template<class K, class V, class Hash = HashFunc<K>>
     class unordered_map
@@ -13,7 +14,7 @@ namespace pzh_map
             }
         };
     public:
-        typedef typename hash_bucket::HashTable<K, pair<const K, V>, MapKeyOfT, Hash>::iterator iterator;
+        typedef typename pzh_hash_bucket::HashTable<K, pair<const K, V>, MapKeyOfT, Hash>::iterator iterator;
 
         iterator begin()
         {
@@ -53,7 +54,7 @@ namespace pzh_map
         }
 
     private:
-        hash_bucket::HashTable<K, pair<const K, V>, MapKeyOfT, Hash> _ht;
+        pzh_hash_bucket::HashTable<K, pair<const K, V>, MapKeyOfT, Hash> _ht;
     };
 
     void test_map()
