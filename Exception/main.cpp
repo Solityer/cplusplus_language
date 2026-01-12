@@ -117,41 +117,6 @@ private:
     const string _type;   // HTTP 请求类型（GET/POST等）
 };
 
-// ------------------------------------------
-// 智能指针 (RAII)
-// ------------------------------------------
-// 简单的 RAII 智能指针模板类，用于管理动态数组
-template<class T>
-class SmartPtr
-{
-public:
-    SmartPtr(T* ptr)  // 构造函数：接管已分配的内存
-        :_ptr(ptr)
-    {}
-
-    ~SmartPtr()  // 析构函数：自动释放内存（RAII核心）
-    {
-        if (_ptr)
-        {
-            cout << "  [SmartPtr] delete[] " << _ptr << endl;
-            delete[] _ptr;
-        }
-    }
-
-    T& operator*()
-    {
-        return *_ptr;
-    }
-
-    T* operator->()
-    {
-        return _ptr;
-    }
-
-private:
-    T* _ptr;
-};
-
 // ==========================================
 // 2. 独立测试模块 (Test Namespaces)
 // ==========================================
@@ -370,42 +335,6 @@ namespace Test_BadAlloc
     }
 }
 
-// 场景六：RAII 智能指针与标准异常 invalid_argument
-namespace Test_RAII
-{
-    // 使用标准库异常
-    double Division(int a, int b)
-    {
-        if (b == 0)
-            throw invalid_argument("Division by zero condition (std::invalid_argument)!");
-        return (double)a / (double)b;
-    }
-
-    void Func()
-    {
-        // RAII 管理资源
-        SmartPtr<int> sp1(new int[10]);   // 自动管理int数组
-        SmartPtr<double> sp2(new double[10]); // 自动管理double数组
-        cout << "  资源已通过 SmartPtr 分配" << endl;
-        int len = 10, time = 0;
-        // 这里抛出异常时，sp1和sp2的析构函数会被自动调用
-        cout << Division(len, time) << endl; // 抛出异常
-        // 正常结束时，智能指针也会自动释放内存
-    }
-
-    void Run()
-    {
-        try
-        {
-            Func();
-        }
-        catch (const exception& e)
-        {
-            cout << "  捕获异常: " << e.what() << endl;
-        }
-    }
-}
-
 // ==========================================
 // 3. Main 函数整合
 // ==========================================
@@ -441,12 +370,5 @@ int main()
     Test_BadAlloc::Run();
     cout << endl;
 
-    cout << "========================================" << endl;
-    cout << "6. 测试 RAII 与 invalid_argument (Test_RAII)" << endl;
-    cout << "========================================" << endl;
-    Test_RAII::Run();
-    cout << endl;
-
-    cout << "所有测试结束。" << endl;
     return 0;
 }
