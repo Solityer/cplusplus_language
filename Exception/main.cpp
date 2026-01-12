@@ -369,6 +369,5 @@ int main()
     cout << "========================================" << endl;
     Test_BadAlloc::Run();
     cout << endl;
-
     return 0;
 }
