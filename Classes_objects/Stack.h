@@ -22,8 +22,8 @@ public:
         : _capacity(capacity), _size(0)
     {
         // 建议在C++中使用 new 替代 malloc，此处为了保持与原代码逻辑一致并演示底层内存操作
-        // _array = new DataType[capacity];
-        _array = (DataType *) malloc(sizeof(DataType) * capacity);
+        _array = new DataType[capacity];
+        // _array = (DataType *) malloc(sizeof(DataType) * capacity);
         if (nullptr == _array)
         {
             perror("malloc failed");
