@@ -18,7 +18,9 @@ int Date::GetMonthDay(int year, int month)
 // 构造函数
 // 采用初始化列表（Initialization List），效率高于在函数体内赋值
 Date::Date(int year, int month, int day)
-    : _year(year), _month(month), _day(day)
+    : _year(year)
+    , _month(month)
+    , _day(day)
 {
     // 构造后的合法性检查
     if (month < 1 || month > 12 || day < 1 || day > GetMonthDay(year, month))
@@ -30,7 +32,9 @@ Date::Date(int year, int month, int day)
 
 // 拷贝构造函数
 Date::Date(const Date &d)
-    : _year(d._year), _month(d._month), _day(d._day)
+    : _year(d._year)
+    , _month(d._month)
+    , _day(d._day)
 {
     // Date类属于POD(Plain Old Data)类型的变体，浅拷贝即可满足需求
     // 但显式定义有助于理解拷贝过程
