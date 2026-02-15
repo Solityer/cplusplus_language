@@ -19,11 +19,12 @@ class Stack
 public:
     // 构造函数
     explicit Stack(size_t capacity = 4)
-        : _capacity(capacity), _size(0)
+        : _capacity(capacity)
+        , _size(0)
     {
-        // 建议在C++中使用 new 替代 malloc，此处为了保持与原代码逻辑一致并演示底层内存操作
-        _array = new DataType[capacity];
-        // _array = (DataType *) malloc(sizeof(DataType) * capacity);
+        // 建议在C++中使用 new 替代 malloc，此处为了保持逻辑一致并演示底层内存操作
+        // _array = new DataType[capacity];
+        _array = (DataType *) malloc(sizeof(DataType) * capacity);
         if (nullptr == _array)
         {
             perror("malloc failed");
@@ -31,8 +32,7 @@ public:
         }
     }
 
-    // 析构函数 (Destructor)
-    // 负责清理资源，防止内存泄漏
+    // 析构函数 (Destructor) -- 负责清理资源，防止内存泄漏
     ~Stack()
     {
         if (_array)

@@ -79,6 +79,30 @@ public:
     Date &operator--(); // 前置--
     Date operator--(int); // 后置--
 
+    // 内部类：日期验证器（体现内部类作为友元的特性）
+    class DateValidator
+    {
+    public:
+        // 检查日期是否合法（直接访问外部类私有成员）
+        static bool IsValid(const Date& date)
+        {
+            // 月份合法性
+            if (date._month < 1 || date._month > 12)
+                return false;
+            // 日期合法性（调用外部类的GetMonthDay）
+            if (date._day < 1 || date._day > GetMonthDay(date._year, date._month))
+                return false;
+            return true;
+        }
+
+        // 打印日期的私有成员（验证访问权限）
+        static void PrintPrivate(const Date& date)
+        {
+            cout << "[内部类] 直接访问Date私有成员：" << endl;
+            cout << "  年：" << date._year << "  月：" << date._month << "  日：" << date._day << endl;
+        }
+    };
+
 private:
     int _year;
     int _month;
