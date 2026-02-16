@@ -1,195 +1,302 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <list>
+#include <exception>
 #include "string.h"
+#include "Vector.h"
 
-void test_string()
+using std::cin;
+using std::cout;
+using std::endl;
+using std::exception;
+
+// å‰ç½®å£°æ˜Žï¼šç”¨äºŽ const è¿­ä»£å™¨æµ‹è¯•çš„è¾…åŠ©å‡½æ•°
+void func_const_test(const pzh::string &s)
 {
-	string s1;
-	string s2("hello");
-	cin >> s1;
-	cout << s1 << endl;
-	cout << s2 << endl;
-
-	string ret1 = s1 + s2;
-	cout << ret1 << endl;
-	string ret2 = s1 + "pzh";
-	cout << ret2 << endl;
+    cout << "[Const Iterator Test]: ";
+    pzh::string::const_iterator it = s.begin();
+    while (it != s.end())
+    {
+        // *it += 1; // ç¼–è¯‘é”™è¯¯ï¼šä¸èƒ½ä¿®æ”¹ const è¿­ä»£å™¨æŒ‡å‘çš„å†…å®¹
+        cout << *it << " ";
+        ++it;
+    }
+    cout << endl;
 }
 
-void func(const string& s)
+/**
+ * @brief æ¨¡å—1ï¼šåŸºç¡€æž„é€ ä¸Žè¿­ä»£å™¨æ ¸å¿ƒæµ‹è¯•
+ */
+void Test_Construction_And_Iteration()
 {
-	string::const_iterator it = s.begin();
-	while (it != s.end()) 
-	{
-		//*it += 1;  //´íÎó	C3892	¡°it¡± : ²»ÄÜ¸ø³£Á¿¸³Öµ	string
-		cout << *it << " ";
-		++it;
-	}
+    cout << "==============================================================" << endl;
+    cout << "[æ¨¡å—1] åŸºç¡€æž„é€  & è¿­ä»£å™¨åè®®éªŒè¯" << endl;
+    cout << "==============================================================" << endl;
+
+    pzh::string s1("hello world");
+    pzh::string s2(s1);
+    pzh::string s3 = "test assignment";
+    pzh::string s4;
+    pzh::string s5(s1, 0, 5);
+    pzh::string s6(10, '*');
+
+    cout << "s1 (å¸¦å‚æž„é€ ): " << s1 << endl;
+    cout << "s2 (æ‹·è´æž„é€ ): " << s2 << endl;
+    cout << "s3 (èµ‹å€¼æž„é€ ): " << s3 << endl;
+    cout << "s4 (é»˜è®¤æž„é€ ): " << s4.c_str() << endl;
+    cout << "s5 (å­ä¸²æž„é€ ): " << s5 << endl;
+    cout << "s6 (é‡å¤å­—ç¬¦): " << s6 << endl;
+
+    cout << "\n[æ™®é€šè¿­ä»£å™¨-å†™æ“ä½œ] å­—ç¬¦ASCII+1: ";
+    pzh::string::iterator it = s1.begin();
+    while (it != s1.end())
+    {
+        (*it)++;
+        cout << *it;
+        ++it;
+    }
+    cout << endl;
+
+    cout << "[èŒƒå›´forå¾ªçŽ¯-è¿˜åŽŸå­—ç¬¦]: ";
+    for (auto &ch : s1)
+    {
+        ch--;
+    }
+    for (auto ch : s1)
+    {
+        cout << ch;
+    }
+    cout << endl;
+}
+
+/**
+ * @brief æ¨¡å—2ï¼šå®¹é‡ç®¡ç†ä¸Žæ·±æ‹·è´éªŒè¯
+ */
+void Test_Capacity_And_DeepCopy()
+{
+    cout << "\n==============================================================" << endl;
+    cout << "[æ¨¡å—2] å†…å­˜ç®¡ç† & æ·±æ‹·è´éªŒè¯" << endl;
+    cout << "==============================================================" << endl;
+
+    pzh::string str_src("Deep Copy Test String");
+    pzh::string str_dest(str_src);
+
+    if ((void *)str_src.c_str() != (void *)str_dest.c_str())
+        cout << "[ç»“æžœ] æ·±æ‹·è´æˆåŠŸï¼šå†…å­˜åœ°å€ä¸åŒ" << endl;
+    else
+        cout << "[ç»“æžœ] æ·±æ‹·è´å¤±è´¥ï¼šæ£€æµ‹åˆ°æµ…æ‹·è´ï¼" << endl;
+
+    pzh::string s_cap;
+    s_cap.reserve(50);
+    cout << "\n[reserve(50)] å®¹é‡: " << s_cap.capacity()
+         << ", å¤§å°: " << s_cap.size() << endl;
+
+    s_cap.resize(60, 'x');
+    cout << "[resize(60, 'x')] å®¹é‡: " << s_cap.capacity()
+         << ", å¤§å°: " << s_cap.size() << endl;
+    cout << "[resizeåŽå†…å®¹]: " << s_cap << endl;
+
+    s_cap.resize(5);
+    cout << "[resize(5)ç¼©å®¹] å®¹é‡: " << s_cap.capacity()
+         << ", å¤§å°: " << s_cap.size() << endl;
+}
+
+/**
+ * @brief æ¨¡å—3ï¼šä¿®æ”¹å™¨ä¸Žç®—æ³•æ ¸å¿ƒæµ‹è¯•
+ */
+void Test_Modifiers_And_Algorithms()
+{
+    cout << "\n==============================================================" << endl;
+    cout << "[æ¨¡å—3] ä¿®æ”¹å™¨ & ç®—æ³•ï¼ˆfind/insert/erase/substrï¼‰" << endl;
+    cout << "==============================================================" << endl;
+
+    pzh::string s_modify("hello solity");
+    cout << "åŽŸå§‹å­—ç¬¦ä¸²: " << s_modify << endl;
+
+    s_modify.insert(5, 1, ' ');
+    cout << "[insert(5, ' ')]: " << s_modify << endl;
+
+    s_modify.erase(5, 1);
+    cout << "[erase(5, 1)]: " << s_modify << endl;
+
+    s_modify.replace(5, 1, "%20");
+    cout << "[replace(5,1,\"%20\")]: " << s_modify << endl;
+
+    // URL è§£æžç¤ºä¾‹
+    pzh::string url("ftp://www.example.com/resources/file.zip");
+    size_t pos_protocol = url.find(':');
+    if (pos_protocol != pzh::string::npos)
+    {
+        pzh::string protocol = url.substr(0, pos_protocol);
+        cout << "åè®®: " << protocol << endl;
+    }
+}
+
+/**
+ * @brief æ¨¡å—4ï¼šæ‹“å±•ç‰¹æ€§æµ‹è¯•
+ */
+void Test_Extended_Features()
+{
+    cout << "\n==============================================================" << endl;
+    cout << "[æ¨¡å—4] æ‹“å±•ç‰¹æ€§ï¼ˆfind_first_of/swap/é¢„æ‰©å®¹ï¼‰" << endl;
+    cout << "==============================================================" << endl;
+
+    pzh::string str_replace("please replace the vowels in this sentence by asterisks.");
+
+    size_t found = str_replace.find_first_of("aeiou");
+    while (found != pzh::string::npos)
+    {
+        str_replace[found] = '*';
+        found = str_replace.find_first_of("aeiou", found + 1);
+    }
+    cout << "[find_first_of] å…ƒéŸ³æ›¿æ¢ä¸º*: " << str_replace << endl;
+
+    pzh::string s_swap1("hello solity");
+    pzh::string s_swap2("######");
+    s_swap1.swap(s_swap2);
+    cout << "[swapåŽ] s_swap1: " << s_swap1 << ", s_swap2: " << s_swap2 << endl;
+}
+
+/**
+ * @brief æ¨¡å—5ï¼šæ³›åž‹å®¹å™¨é›†æˆæµ‹è¯•
+ */
+void Test_Vector_Integration()
+{
+    cout << "\n==============================================================" << endl;
+    cout << "[æ¨¡å—5] æ³›åž‹å®¹å™¨é›†æˆï¼ˆVector<pzh::string>ï¼‰" << endl;
+    cout << "==============================================================" << endl;
+
+    Vector<pzh::string> vStr(10);
+    pzh::string s1("Generic");
+    pzh::string s2("Programming");
+    pzh::string s3("Test");
+
+    vStr.PushBack(s1);
+    vStr.PushBack(s2);
+    vStr.PushBack(s3);
+    vStr.PushBack("Implicit Construct");
+
+    cout << "Vectorå¤§å°: " << vStr.Size() << endl;
+    for (size_t i = 0; i < vStr.Size(); ++i)
+    {
+        cout << "[" << i << "]: " << vStr[i] << endl;
+    }
+}
+
+/**
+ * @brief æ¨¡å—6ï¼šæ¯”è¾ƒè¿ç®—ç¬¦é‡è½½æµ‹è¯•
+ */
+void Test_Comparison_Operators()
+{
+    cout << "\n==============================================================" << endl;
+    cout << "[æ¨¡å—6] æ¯”è¾ƒè¿ç®—ç¬¦é‡è½½éªŒè¯" << endl;
+    cout << "==============================================================" << endl;
+
+    pzh::string s1("apple");
+    pzh::string s2("banana");
+
+    cout << "s1: " << s1 << ", s2: " << s2 << endl;
+    cout << "s1 < s2: " << (s1 < s2) << endl;
+    cout << "s1 == s1: " << (s1 == s1) << endl;
+}
+
+/**
+ * @brief æ¨¡å—7ï¼šç»¼åˆçŸ¥è¯†ç‚¹æ¼”ç¤º
+ */
+void Test_Knowledge_Points()
+{
+    cout << "\n==============================================================" << endl;
+    cout << "[æ¨¡å—7] ç»¼åˆçŸ¥è¯†ç‚¹æ¼”ç¤º (Char/Capacity/Reverse Iterator)" << endl;
+    cout << "==============================================================" << endl;
+
+    // 1. å­—ç¬¦ç¼–ç æµ‹è¯• (æ³¨æ„ï¼šä¾èµ–æºæ–‡ä»¶ç¼–ç ï¼Œé€šå¸¸UTF-8ä¸‹ä¸­æ–‡ä¸º3å­—èŠ‚ï¼ŒGBKä¸º2å­—èŠ‚)
+    char str2[] = "å°é€æ˜Ž";
+    cout << "sizeof(str2): " << sizeof(str2) << " (åŒ…å«\\0)" << endl;
+    // ä¿®æ”¹å­—èŠ‚æ¼”ç¤º
+    str2[3]++;
+    cout << "ä¿®æ”¹å­—èŠ‚åŽ: " << str2 << endl;
+    str2[3]--;
+    cout << "è¿˜åŽŸå­—èŠ‚åŽ: " << str2 << endl;
+
+    // 2. å®¹é‡ä¸Žå¤§å°æŽ¥å£
+    pzh::string s8("hello solity");
+    cout << "size(): " << s8.size() << endl;
+    cout << "length(): " << s8.length() << endl;     // å·²è¡¥å…¨
+    cout << "max_size(): " << s8.max_size() << endl; // å·²è¡¥å…¨
+    cout << "capacity(): " << s8.capacity() << endl;
+
+    // 3. è¿½åŠ æ“ä½œ
+    pzh::string s9("hello solity");
+    s9 += ' ';
+    s9 += "world";
+    cout << "Append Result: " << s9 << endl;
+
+    // 4. åå‘è¿­ä»£å™¨æ¼”ç¤º
+    pzh::string s11("hello solity");
+    cout << "Reverse Iterator: ";
+    pzh::string::reverse_iterator rit = s11.rbegin(); // å·²è¡¥å…¨
+    while (rit != s11.rend())                         // å·²è¡¥å…¨
+    {
+        cout << *rit << " ";
+        ++rit;
+    }
+    cout << endl;
+
+    // 5. Constè¿­ä»£å™¨è°ƒç”¨
+    func_const_test(s11);
+
+    // 6. è¿­ä»£å™¨åˆ é™¤
+    pzh::string s14("hello solity");
+    // åŽŸå§‹è°ƒç”¨: s14.erase(s14.begin() + 5);
+    // string.h ä¸­å·²è¡¥å…¨ erase(iterator) æŽ¥å£ä»¥æ”¯æŒæ­¤æ“ä½œ
+    s14.erase(s14.begin() + 5);
+    cout << "Iterator Erase Result: " << s14 << endl;
+
+    // 7. æŸ¥æ‰¾ä¸Žæ›¿æ¢å¾ªçŽ¯
+    pzh::string s18("hello world solity pzh");
+    size_t num = 0;
+    for (auto ch : s18)
+    {
+        if (ch == ' ')
+            ++num;
+    }
+
+    // é¢„æ‰©å®¹ç­–ç•¥
+    s18.reserve(s18.size() + 3 * num);
+
+    size_t pos2 = s18.find(' ');
+    while (pos2 != pzh::string::npos)
+    {
+        s18.replace(pos2, 1, "%d%");
+        pos2 = s18.find(' ', pos2 + 3);
+    }
+    cout << "Batch Replace Result: " << s18 << endl;
 }
 
 int main()
 {
-	test_string();
+    try
+    {
+        Test_Construction_And_Iteration();
+        Test_Capacity_And_DeepCopy();
+        Test_Modifiers_And_Algorithms();
+        Test_Extended_Features();
+        Test_Vector_Integration();
+        Test_Comparison_Operators();
+        Test_Knowledge_Points();
 
-	//GBK
-	char str1[] = "apple";
-	//GBK±àÂë£¬Ò»¸öÖÐÎÄ×Ö·ûÕ¼2¸ö×Ö½Ú£»UTF-8±àÂë£¬Ò»¸öÖÐÎÄ×Ö·ûÕ¼3¸ö×Ö½Ú
-	char str2[] = "Ð¡Í¸Ã÷";
-	cout << sizeof(str2) << endl;
-	str2[3]++;
-	cout << str2 << endl;
-	str2[3]--;
-	cout << str2 << endl;
+        cout << "\n==============================================================" << endl;
+        cout << "[å…¨éƒ¨æµ‹è¯•å®Œæˆ] æ— å¼‚å¸¸è§¦å‘" << endl;
+    }
+    catch (const exception &e)
+    {
+        std::cerr << "\n[æ ‡å‡†å¼‚å¸¸æ•èŽ·] " << e.what() << endl;
+    }
+    catch (...)
+    {
+        std::cerr << "\n[æœªçŸ¥å¼‚å¸¸æ•èŽ·] ç¨‹åºå¼‚å¸¸é€€å‡º" << endl;
+    }
 
-	//ÎÞ²Îstring
-	string s1;
-	string s2("hello solity");
-	cout << s2 << endl;
-	string s3 = "hello solity\0";
-	cout << s3 << endl;
-	string s4(s3,0,4);  //´ÓµÚ0¸ö×Ö·ûÍùºóµÄ4¸ö×Ö·û(Ç°±Õºó¿ª)
-	cout << s4 << endl;
-	string s5(s3,2);  //´Ós3µÄµÚ¶þ¸ö×Ö·ûÍùºóµÄËùÓÐ×Ö·û
-	cout << s5 << endl;
-	string s6("hello solity", 4);  //Ç°4¸ö×Ö·û
-	cout << s6 << endl;
-	string s7(10, '*');  //10¸ö*£¨Ö¸¶¨¸öÊý¸öÖ¸¶¨·ûºÅ£©
-	cout << s7 << endl;
-
-	string s8("hello solity");
-	cout << s8.size() << endl;  //size()Êµ¼Ê×Ö·ûÊýÁ¿£¬Ëæ×Ö·û´®ÐÞ¸ÄÊµÊ±±ä»¯
-	cout << s8.length() << endl;
-	cout << s8.max_size() << endl; //Êµ¼Ê¿ÉÒÔµÄ×î´ó³¤¶È
-	//capacity()¿É´æ´¢µÄ×î´ó×Ö·ûÊý	Ö»Ôö²»¼õ£¬³ý·ÇÊÖ¶¯µ÷Õû
-	cout << s8.capacity() << endl;  //ÈÝÁ¿´óÐ¡
-
-	string s9("hello solity");
-	s9.push_back(' ');
-	s9.push_back('!'); //push_back²åÈëÒ»¸ö×Ö·û
-	s9.append("wolrd");   //append²åÈë×Ö·û´®
-	/*¼ò»¯²åÈë²Ù×÷*/
-	s9 += ' ';
-	s9 += '!';
-	s9 += "world";
-	cout << s9 << endl;
-
-	//Ö»¸Ä±äÈÝÁ¿  À©ÈÝ
-	string s10("hello solity");
-	s10.reserve(100); //Ô¤ÁôÖÁÉÙ100¸ö×Ö·ûµÄ¿Õ¼ä
-	cout << s10.size() << endl;
-	cout << s10.capacity() << endl;
-
-	//À©ÈÝ£«³õÊ¼»¯
-	string s11("hello solity");
-	s11.resize(100);
-	cout << s11.size() << endl;
-	cout << s11.capacity() << endl;
-
-	//ÆÕÍ¨µü´úÆ÷
-	//ÕýÏò
-	string s12("hello solity");
-	string::iterator it = s12.begin();
-	while (it != s12.end())
-	{
-		cout << *it << " ";
-		++it;
-	}
-	cout << endl;
-	//·´Ïò
-	string::reverse_iterator rit = s11.rbegin();
-	while (rit != s11.rend())
-	{
-		cout << *rit << " ";
-		++rit;
-	}
-	cout << endl;
-
-	//constµü´úÆ÷
-	func(s12);
-	cout << endl;
-
-	//at   //ºÜÉÙÓÃ
-	//Óëoperator[]ÀàËÆ
-	//s12[200];  //Ö±½ÓÖÕÖ¹³ÌÐò
-	//s12.at(200);  //Å×Òì³£
-
-	/*insert*/
-	string s13("hello solity");
-	s13.insert(0,"pzh"); //²»ÄÜ²åÈëµ¥¸ö×Ö·û
-	cout << s13 << endl;
-	s13.insert(3, 1, ' ');  //²åÈëµ¥¸ö×Ö·û½â¾ö·½·¨  µÚ3¸öÎ»ÖÃ²åÈë1¸ö×Ö·û
-	s13.insert(3, " ");  //ÕâÑùÒ²¿ÉÒÔ
-	cout << s13 << endl;
-
-	/*earse*/
-	string s14("hello solity");
-	s14.erase(5, 1);  //µÚÎå¸öÎ»ÖÃÉ¾³ýÒ»¸ö×Ö·û
-	cout << s14 << endl;
-	s14.erase(s14.begin() + 5);
-	cout << s14 << endl;
-
-	/*replace*/
-	string s15("solitypzh");
-	s15.replace(5, 1,"%d%");  //µÚ5¸öÎ»ÖÃ¿ªÊ¼µÄ1¸ö×Ö·ûÌæ»»Îª%d%
-	cout << s15 << endl;
-
-	/*find*/
-	string s16("hello world solity pzh");
-	size_t pos = s16.find(' ');  //ÕÒµ½·µ»ØµÚÒ»´ÎÆ¥ÅäµÄÎ»ÖÃ£¬Î´ÕÒµ½¾Í·µ»Ønpos
-	if(pos != string::npos)
-	{
-		s16.replace(pos, 1, "%d%");
-	}
-	cout << s16 << endl;
-
-	string s17("hello world solity pzh");
-	size_t pos1 = s17.find(' ');  //ÕÒµ½·µ»ØµÚÒ»´ÎÆ¥ÅäµÄÎ»ÖÃ£¬Î´ÕÒµ½¾Í·µ»Ønpos
-	while(pos1 != string::npos)
-	{
-		s17.replace(pos, 1, "%d%");
-		pos1 = s17.find(' ',pos1 + 3); //ÏÂ´Î´Ópos+3µÄÎ»ÖÃ¿ªÊ¼ÕÒ£¨Ä¬ÈÏ´ÓÍ·¿ªÊ¼£©
-	}
-	cout << s17 << endl;
-
-	string s18("hello world solity pzh");
-	size_t num = 0;
-	for (auto ch : s18)
-	{
-		if (ch == ' ')
-			++num;
-	}
-	s18.reserve(s18.size() + 3 * num);
-	size_t pos2 = s18.find(' ');
-	while (pos2 != string::npos)
-	{
-		s18.replace(pos2, 1, "%d%");
-		pos2 = s18.find(' ', pos2 + 3);
-	}
-	cout << s18 << endl;
-
-	string s19("hello solity");
-	string s20("######");
-	s19.swap(s20);  //¸ü¸ßÐ§
-	//swap(s19,s20);
-	cout << s19 << endl;
-	cout << s20 << endl;
-
-	/*find_first_of*/
-	//Õý×ÅÕÒ
-	//°ÑÖ¸¶¨µÄËùÓÐ×Ö·ûÈ«²¿Ìæ»»Îª×Ô¶¨×Ö·û
-	string str("please,replace the vowels in this sentence by asterisks.");
-	size_t found = str.find_first_of("abcd");
-	while (found != string::npos)
-	{
-		str[found] = '*';
-		found = str.find_first_of("abcd", found + 1);
-	}
-	cout << str << endl;
-
-	/*find_last_of*/
-	//µ¹×ÅÕÒ
-
-	pzh::func_str1();
-	pzh::func_str2();
-	pzh::func_str3();
-
-	return 0;
+    return 0;
 }
