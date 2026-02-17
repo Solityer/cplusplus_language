@@ -1,10 +1,11 @@
+#include <exception>
 #include <iostream>
+#include <list>
 #include <string>
 #include <vector>
-#include <list>
-#include <exception>
-#include "string.h"
+
 #include "Vector.h"
+#include "string.h"
 
 using std::cin;
 using std::cout;
@@ -12,7 +13,7 @@ using std::endl;
 using std::exception;
 
 // 前置声明：用于 const 迭代器测试的辅助函数
-void func_const_test(const pzh::string &s)
+void func_const_test(const pzh::string& s)
 {
     cout << "[Const Iterator Test]: ";
     pzh::string::const_iterator it = s.begin();
@@ -59,7 +60,7 @@ void Test_Construction_And_Iteration()
     cout << endl;
 
     cout << "[范围for循环-还原字符]: ";
-    for (auto &ch : s1)
+    for (auto& ch : s1)
     {
         ch--;
     }
@@ -82,7 +83,7 @@ void Test_Capacity_And_DeepCopy()
     pzh::string str_src("Deep Copy Test String");
     pzh::string str_dest(str_src);
 
-    if ((void *)str_src.c_str() != (void *)str_dest.c_str())
+    if ((void*)str_src.c_str() != (void*)str_dest.c_str())
         cout << "[结果] 深拷贝成功：内存地址不同" << endl;
     else
         cout << "[结果] 深拷贝失败：检测到浅拷贝！" << endl;
@@ -222,8 +223,8 @@ void Test_Knowledge_Points()
     // 2. 容量与大小接口
     pzh::string s8("hello solity");
     cout << "size(): " << s8.size() << endl;
-    cout << "length(): " << s8.length() << endl;     // 已补全
-    cout << "max_size(): " << s8.max_size() << endl; // 已补全
+    cout << "length(): " << s8.length() << endl;      // 已补全
+    cout << "max_size(): " << s8.max_size() << endl;  // 已补全
     cout << "capacity(): " << s8.capacity() << endl;
 
     // 3. 追加操作
@@ -235,8 +236,8 @@ void Test_Knowledge_Points()
     // 4. 反向迭代器演示
     pzh::string s11("hello solity");
     cout << "Reverse Iterator: ";
-    pzh::string::reverse_iterator rit = s11.rbegin(); // 已补全
-    while (rit != s11.rend())                         // 已补全
+    pzh::string::reverse_iterator rit = s11.rbegin();  // 已补全
+    while (rit != s11.rend())                          // 已补全
     {
         cout << *rit << " ";
         ++rit;
@@ -276,27 +277,13 @@ void Test_Knowledge_Points()
 
 int main()
 {
-    try
-    {
-        Test_Construction_And_Iteration();
-        Test_Capacity_And_DeepCopy();
-        Test_Modifiers_And_Algorithms();
-        Test_Extended_Features();
-        Test_Vector_Integration();
-        Test_Comparison_Operators();
-        Test_Knowledge_Points();
-
-        cout << "\n==============================================================" << endl;
-        cout << "[全部测试完成] 无异常触发" << endl;
-    }
-    catch (const exception &e)
-    {
-        std::cerr << "\n[标准异常捕获] " << e.what() << endl;
-    }
-    catch (...)
-    {
-        std::cerr << "\n[未知异常捕获] 程序异常退出" << endl;
-    }
-
+    Test_Construction_And_Iteration();
+    Test_Capacity_And_DeepCopy();
+    Test_Modifiers_And_Algorithms();
+    Test_Extended_Features();
+    Test_Vector_Integration();
+    Test_Comparison_Operators();
+    Test_Knowledge_Points();
+    cout << "\n==============================================================" << endl;
     return 0;
 }
