@@ -1,9 +1,8 @@
 #pragma once
 #include <assert.h>
-
 #include <iostream>
 
-// 辅助函数：通用加法
+// 通用加法
 template <class T>
 T Add(T left, T right)
 {

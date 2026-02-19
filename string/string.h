@@ -17,11 +17,11 @@ class string
 {
    public:
     // 类型定义
-    typedef char* iterator;                                    // 正向迭代器类型
-    typedef const char* const_iterator;                        // 常量正向迭代器类型
-    typedef std::reverse_iterator<iterator> reverse_iterator;  // 反向迭代器类型
+    typedef char* iterator;                                                // 正向迭代器类型
+    typedef const char* const_iterator;                                    // 常量正向迭代器类型
+    typedef std::reverse_iterator<iterator> reverse_iterator;              // 反向迭代器类型
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;  // 常量反向迭代器类型
-    static const size_t npos;  // 静态常量，表示“未找到”或“直到末尾”的特殊值
+    static const size_t npos;                                              // 静态常量，表示“未找到”或“直到末尾”的特殊值
 
     /* ========================================================================
      * 1. 构造、析构与赋值 (Canonical Form)
@@ -45,7 +45,9 @@ class string
      * @param n  字符个数
      * @param ch 要重复的字符
      */
-    string(size_t n, char ch) : _size(n), _capacity(n)
+    string(size_t n, char ch) 
+        : _size(n)
+        , _capacity(n)
     {
         _str = new char[_capacity + 1];
         for (size_t i = 0; i < n; ++i)
@@ -93,7 +95,7 @@ class string
     /**
      * @brief 赋值运算符重载（使用拷贝交换技巧）
      * @param tmp 通过值传递的临时对象（已经拷贝了源对象）
-     * @return    *this 的引用
+     * @return *this 的引用
      *
      * 注意：参数使用值传递，会自动调用拷贝构造或移动构造。
      * 然后通过 swap 交换当前对象和临时对象的内容。
@@ -272,7 +274,7 @@ class string
     /**
      * @brief 下标运算符重载（只读版本）
      * @param pos 位置索引
-     * @return    该位置的字符常量引用
+     * @return  该位置的字符常量引用
      */
     const char& operator[](size_t pos) const
     {
@@ -329,7 +331,7 @@ class string
     /**
      * @brief 运算符 += 重载（追加字符串）
      * @param str 要追加的字符串
-     * @return   *this 的引用
+     * @return   *this的引用
      */
     string& operator+=(const char* str)
     {
@@ -403,7 +405,7 @@ class string
      * @brief 从指定位置删除字符
      * @param pos 起始删除位置，默认为 0
      * @param len 要删除的长度，默认为 npos（表示删除到末尾）
-     * @return    *this 的引用
+     * @return  *this 的引用
      */
     string& erase(size_t pos, size_t len = npos)
     {
@@ -478,7 +480,7 @@ class string
      * @brief 查找子串
      * @param sub 要查找的子串
      * @param pos 开始查找的位置，默认为 0
-     * @return    找到的位置，否则返回 npos
+     * @return  找到的位置，否则返回 npos
      */
     size_t find(const char* sub, size_t pos = 0) const
     {
@@ -569,9 +571,9 @@ class string
     }
 
    private:
-    char* _str;        ///< 指向动态分配的字符数组的指针
-    size_t _size;      ///< 当前字符串的长度（不包括 '\0'）
-    size_t _capacity;  ///< 当前分配的存储容量（不包括 '\0'）
+    char* _str;        // 指向动态分配的字符数组的指针
+    size_t _size;      // 当前字符串的长度（不包括 '\0'）
+    size_t _capacity;  // 当前分配的存储容量（不包括 '\0'）
 };
 
 // 静态常量定义
@@ -633,4 +635,4 @@ inline std::istream& operator>>(std::istream& in, string& s)
     }
     return in;
 }
-}  // namespace pzh
+}

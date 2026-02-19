@@ -12,7 +12,7 @@ using std::cout;
 using std::endl;
 using std::exception;
 
-// 前置声明：用于 const 迭代器测试的辅助函数
+// 用于 const 迭代器测试的辅助函数
 void func_const_test(const pzh::string& s)
 {
     cout << "[Const Iterator Test]: ";
@@ -212,32 +212,32 @@ void Test_Knowledge_Points()
     cout << "==============================================================" << endl;
 
     // 1. 字符编码测试 (注意：依赖源文件编码，通常UTF-8下中文为3字节，GBK为2字节)
-    char str2[] = "小透明";
-    cout << "sizeof(str2): " << sizeof(str2) << " (包含\\0)" << endl;
+    char str[] = "小透明";
+    cout << "sizeof(str): " << sizeof(str) << " (包含\\0)" << endl;
     // 修改字节演示
-    str2[3]++;
-    cout << "修改字节后: " << str2 << endl;
-    str2[3]--;
-    cout << "还原字节后: " << str2 << endl;
+    str[3]++;
+    cout << "修改字节后: " << str << endl;
+    str[3]--;
+    cout << "还原字节后: " << str << endl;
 
     // 2. 容量与大小接口
-    pzh::string s8("hello solity");
-    cout << "size(): " << s8.size() << endl;
-    cout << "length(): " << s8.length() << endl;      // 已补全
-    cout << "max_size(): " << s8.max_size() << endl;  // 已补全
-    cout << "capacity(): " << s8.capacity() << endl;
+    pzh::string s1("hello solity");
+    cout << "size(): " << s1.size() << endl;
+    cout << "length(): " << s1.length() << endl;      // 已补全
+    cout << "max_size(): " << s1.max_size() << endl;  // 已补全
+    cout << "capacity(): " << s1.capacity() << endl;
 
     // 3. 追加操作
-    pzh::string s9("hello solity");
-    s9 += ' ';
-    s9 += "world";
-    cout << "Append Result: " << s9 << endl;
+    pzh::string s2("hello solity");
+    s2 += ' ';
+    s2 += "world";
+    cout << "Append Result: " << s2 << endl;
 
     // 4. 反向迭代器演示
-    pzh::string s11("hello solity");
+    pzh::string s3("hello solity");
     cout << "Reverse Iterator: ";
-    pzh::string::reverse_iterator rit = s11.rbegin();  // 已补全
-    while (rit != s11.rend())                          // 已补全
+    pzh::string::reverse_iterator rit = s3.rbegin();
+    while (rit != s3.rend())
     {
         cout << *rit << " ";
         ++rit;
@@ -245,34 +245,32 @@ void Test_Knowledge_Points()
     cout << endl;
 
     // 5. Const迭代器调用
-    func_const_test(s11);
+    func_const_test(s3);
 
     // 6. 迭代器删除
-    pzh::string s14("hello solity");
-    // 原始调用: s14.erase(s14.begin() + 5);
-    // string.h 中已补全 erase(iterator) 接口以支持此操作
-    s14.erase(s14.begin() + 5);
-    cout << "Iterator Erase Result: " << s14 << endl;
+    pzh::string s4("hello solity");
+    s4.erase(s4.begin() + 5);
+    cout << "Iterator Erase Result: " << s4 << endl;
 
     // 7. 查找与替换循环
-    pzh::string s18("hello world solity pzh");
+    pzh::string s5("hello world solity pzh");
     size_t num = 0;
-    for (auto ch : s18)
+    for (auto ch : s5)
     {
         if (ch == ' ')
             ++num;
     }
 
     // 预扩容策略
-    s18.reserve(s18.size() + 3 * num);
+    s5.reserve(s5.size() + 3 * num);
 
-    size_t pos2 = s18.find(' ');
+    size_t pos2 = s5.find(' ');
     while (pos2 != pzh::string::npos)
     {
-        s18.replace(pos2, 1, "%d%");
-        pos2 = s18.find(' ', pos2 + 3);
+        s5.replace(pos2, 1, "%d%");
+        pos2 = s5.find(' ', pos2 + 3);
     }
-    cout << "Batch Replace Result: " << s18 << endl;
+    cout << "Batch Replace Result: " << s5 << endl;
 }
 
 int main()
